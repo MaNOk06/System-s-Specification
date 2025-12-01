@@ -1,0 +1,225 @@
+<!DOCTYPE html>
+<html lang="en" class="light">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>System Specification Translator</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script>
+        tailwind.config = {
+            darkMode: 'class',
+        }
+    </script>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;600;700&display=swap" rel="stylesheet">
+    <style>
+        body { font-family: 'Inter', sans-serif; }
+    </style>
+    <script src="https://unpkg.com/lucide@latest"></script>
+</head>
+<body class="bg-slate-50 dark:bg-slate-900 text-slate-800 dark:text-slate-200 min-h-screen flex flex-col transition-colors duration-300">
+
+    <nav class="w-full bg-white dark:bg-slate-800 border-b border-slate-200 dark:border-slate-700 py-4 px-6 flex justify-between items-center sticky top-0 z-10 transition-colors duration-300">
+        <div class="flex items-center gap-3">
+            <div class="bg-blue-100 dark:bg-blue-900 p-2 rounded-lg">
+                <i data-lucide="binary" class="text-blue-600 dark:text-blue-400 w-6 h-6"></i>
+            </div>
+            <h1 class="text-xl font-bold tracking-tight text-slate-900 dark:text-white">
+                System Specification <span class="text-blue-600 dark:text-blue-400">Translator</span>
+            </h1>
+        </div>
+
+        <div class="flex items-center gap-4">
+            <button onclick="toggleTheme()" class="p-2 rounded-full hover:bg-slate-100 dark:hover:bg-slate-700 text-slate-500 dark:text-slate-400 transition-colors">
+                <i id="themeIcon" data-lucide="moon" class="w-5 h-5"></i>
+            </button>
+            
+            <button class="flex items-center gap-2 bg-slate-100 dark:bg-slate-700 hover:bg-slate-200 dark:hover:bg-slate-600 py-2 px-4 rounded-full transition-colors">
+                <div class="w-6 h-6 bg-blue-500 rounded-full flex items-center justify-center text-white text-xs font-bold">
+                    G11
+                </div>
+                <span class="text-sm font-medium text-slate-700 dark:text-slate-200 hidden sm:inline">Group 11</span>
+            </button>
+        </div>
+    </nav>
+
+    <main class="flex-grow flex flex-col lg:flex-row w-full p-6 gap-6">
+        
+        <section class="flex-grow flex flex-col gap-6">
+            
+            <div class="bg-white dark:bg-slate-800 rounded-2xl shadow-sm border border-slate-200 dark:border-slate-700 p-6 flex-grow flex flex-col transition-colors duration-300">
+                <label class="block text-sm font-semibold text-slate-500 dark:text-slate-400 mb-2 uppercase tracking-wide">
+                    Natural Language Input
+                </label>
+                <textarea id="inputText" 
+                    class="w-full h-40 p-4 text-lg bg-slate-50 dark:bg-slate-900 border border-slate-200 dark:border-slate-700 text-slate-900 dark:text-white rounded-xl focus:ring-2 focus:ring-blue-500 focus:border-transparent outline-none resize-none transition-all placeholder:text-slate-400"
+                    placeholder="e.g. If the system is ready then the green light is on"></textarea>
+                
+                <div class="flex justify-between items-center mt-4">
+                    <p class="text-xs text-slate-400 dark:text-slate-500">Supports: AND, OR, IF...THEN, NOT</p>
+                    <button onclick="translateText()" 
+                        class="bg-blue-600 hover:bg-blue-700 text-white font-medium py-3 px-8 rounded-lg transition-colors flex items-center gap-2 shadow-lg shadow-blue-500/20">
+                        <span>Translate</span>
+                        <i data-lucide="arrow-right" class="w-4 h-4"></i>
+                    </button>
+                </div>
+            </div>
+
+            <div class="bg-white dark:bg-slate-800 rounded-2xl shadow-sm border border-slate-200 dark:border-slate-700 p-6 flex flex-col md:flex-row gap-6 transition-colors duration-300">
+                
+                <div class="flex-1">
+                    <label class="block text-sm font-semibold text-slate-500 dark:text-slate-400 mb-2 uppercase tracking-wide">
+                        Symbolic Logic Output
+                    </label>
+                    <div id="symbolicOutput" 
+                        class="w-full bg-slate-900 text-green-400 font-mono text-xl p-6 rounded-xl min-h-[120px] flex items-center shadow-inner border border-slate-800">
+                        <span class="text-slate-600 italic select-none">Waiting for input...</span>
+                    </div>
+                </div>
+
+                <div class="flex-1 border-l border-slate-100 dark:border-slate-700 md:pl-6 pt-6 md:pt-0">
+                    <label class="block text-sm font-semibold text-slate-500 dark:text-slate-400 mb-2 uppercase tracking-wide">
+                        Variable Legend
+                    </label>
+                    <div class="bg-slate-50 dark:bg-slate-900 rounded-xl border border-slate-200 dark:border-slate-700 overflow-hidden h-full max-h-[200px] overflow-y-auto">
+                        <table class="w-full text-sm text-left">
+                            <thead class="bg-slate-100 dark:bg-slate-800 text-slate-600 dark:text-slate-300 font-semibold border-b border-slate-200 dark:border-slate-700 sticky top-0">
+                                <tr>
+                                    <th class="py-2 px-4 w-16">Var</th>
+                                    <th class="py-2 px-4">Proposition</th>
+                                </tr>
+                            </thead>
+                            <tbody id="legendBody" class="divide-y divide-slate-200 dark:divide-slate-700 text-slate-700 dark:text-slate-300">
+                                <tr><td colspan="2" class="p-4 text-center text-slate-400 italic">No variables yet</td></tr>
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <aside class="w-full lg:w-96 flex-shrink-0">
+            <div class="bg-white dark:bg-slate-800 rounded-2xl shadow-sm border border-slate-200 dark:border-slate-700 p-5 h-full flex flex-col transition-colors duration-300">
+                <div class="flex justify-between items-center mb-4">
+                    <h3 class="font-bold text-slate-700 dark:text-slate-200 flex items-center gap-2">
+                        <i data-lucide="history" class="w-4 h-4 text-blue-500"></i> History
+                    </h3>
+                    <button onclick="clearHistory()" class="text-xs text-red-500 hover:text-red-600 font-medium px-2 py-1 rounded hover:bg-red-50 dark:hover:bg-red-900/20 transition-colors">
+                        Clear All
+                    </button>
+                </div>
+                
+                <div id="historyList" class="flex-grow overflow-y-auto space-y-3 pr-2 max-h-[600px] lg:max-h-none">
+                    <div class="text-center text-slate-400 dark:text-slate-600 text-sm mt-10">
+                        No recent translations
+                    </div>
+                </div>
+            </div>
+        </aside>
+
+    </main>
+
+    <footer class="w-full bg-white dark:bg-slate-800 border-t border-slate-200 dark:border-slate-700 py-6 text-center transition-colors duration-300">
+        <p class="text-slate-500 dark:text-slate-400 font-medium">Group 11</p>
+        <p class="text-slate-400 dark:text-slate-500 text-sm mt-1">
+            Discrete Math Project by <span class="text-blue-500 font-semibold">Martha, James and Miriam</span>
+        </p>
+    </footer>
+
+    <script>
+        // Initialize Icons
+        lucide.createIcons();
+
+        // Theme Toggle Logic
+        function toggleTheme() {
+            const html = document.documentElement;
+            const icon = document.getElementById('themeIcon');
+            
+            if (html.classList.contains('dark')) {
+                html.classList.remove('dark');
+                icon.setAttribute('data-lucide', 'moon');
+                localStorage.setItem('theme', 'light');
+            } else {
+                html.classList.add('dark');
+                icon.setAttribute('data-lucide', 'sun');
+                localStorage.setItem('theme', 'dark');
+            }
+            lucide.createIcons();
+        }
+
+        // Translation Logic
+        async function translateText() {
+            const inputField = document.getElementById('inputText');
+            const text = inputField.value;
+            const outputDiv = document.getElementById('symbolicOutput');
+            const legendBody = document.getElementById('legendBody');
+
+            if (!text.trim()) return;
+
+            const response = await fetch('/translate', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ text: text })
+            });
+
+            const data = await response.json();
+
+            if (data.error) {
+                outputDiv.innerHTML = `<span class="text-red-400">Error: ${data.error}</span>`;
+                return;
+            }
+
+            // Update Output
+            outputDiv.innerText = data.symbolic;
+
+            // Update Legend
+            legendBody.innerHTML = "";
+            const keys = Object.keys(data.legend).sort();
+            if (keys.length === 0) {
+                legendBody.innerHTML = `<tr><td colspan="2" class="p-4 text-center text-slate-400">No variables</td></tr>`;
+            } else {
+                keys.forEach(key => {
+                    const row = `
+                        <tr class="hover:bg-blue-50 dark:hover:bg-blue-900/30 transition-colors border-b border-slate-100 dark:border-slate-700/50 last:border-0">
+                            <td class="py-3 px-4 font-mono font-bold text-blue-600 dark:text-blue-400 border-r border-slate-100 dark:border-slate-700">${key}</td>
+                            <td class="py-3 px-4 text-slate-600 dark:text-slate-300">${data.legend[key]}</td>
+                        </tr>`;
+                    legendBody.innerHTML += row;
+                });
+            }
+
+            addToHistory(text, data.symbolic);
+        }
+
+        function addToHistory(original, symbolic) {
+            const list = document.getElementById('historyList');
+            
+            if (list.children.length === 1 && list.children[0].classList.contains('text-center')) {
+                list.innerHTML = '';
+            }
+
+            const item = document.createElement('div');
+            item.className = "p-4 bg-slate-50 dark:bg-slate-700/50 border border-slate-200 dark:border-slate-700 rounded-xl text-sm hover:border-blue-300 dark:hover:border-blue-500 transition-colors cursor-pointer group";
+            item.onclick = () => {
+                document.getElementById('inputText').value = original;
+                translateText();
+            };
+
+            item.innerHTML = `
+                <div class="text-slate-500 dark:text-slate-400 truncate mb-2 line-clamp-2" title="${original}">${original}</div>
+                <div class="font-mono text-blue-600 dark:text-blue-400 font-semibold flex justify-between items-center bg-white dark:bg-slate-800 p-2 rounded border border-slate-100 dark:border-slate-700">
+                    ${symbolic}
+                    <i data-lucide="chevron-right" class="w-3 h-3 text-slate-300 dark:text-slate-500 group-hover:text-blue-500"></i>
+                </div>
+            `;
+            
+            list.insertBefore(item, list.firstChild);
+            lucide.createIcons();
+        }
+
+        function clearHistory() {
+            const list = document.getElementById('historyList');
+            list.innerHTML = '<div class="text-center text-slate-400 dark:text-slate-600 text-sm mt-10">No recent translations</div>';
+        }
+    </script>
+</body>
+</html>
